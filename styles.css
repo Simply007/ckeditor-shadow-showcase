@@ -1,0 +1,230 @@
+/* CKEditor "Nova" page palette. Three independent style levels:
+   1 · surroundings (a switchable app frame hosting both editors),
+   2 · editor theme (--ck-color-* on the shadow hosts + <html>),
+   3 · content styles (.ck-content typography per tree).
+   A shadow-DOM editor and a light-DOM twin sit in the same frame to show
+   which levels bleed where. */
+:root {
+  --bg: #f8f9fb;
+  --surface: #ffffff;
+  --ink: #0e001a;
+  --ink-2: #394556;
+  --muted: #868d98;
+  --grid: #e9ebee;
+  --border: rgba(14,0,26,0.10);
+  --accent: #7e00fd;
+  --btn-bg: #7e00fd;
+  --btn-ink: #ffffff;
+  --code-bg: #1c0038;
+  --code-ink: #e9ddfb;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e001a; --surface: #1c0038; --ink: #ffffff; --ink-2: #c1b2d0;
+    --muted: #a897bb; --grid: #300061; --border: rgba(255,255,255,0.12);
+    --accent: #b266fe; --btn-bg: #afe229; --btn-ink: #1c0038;
+    --code-bg: #15002b; --code-ink: #e9ddfb;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e001a; --surface: #1c0038; --ink: #ffffff; --ink-2: #c1b2d0;
+  --muted: #a897bb; --grid: #300061; --border: rgba(255,255,255,0.12);
+  --accent: #b266fe; --btn-bg: #afe229; --btn-ink: #1c0038;
+  --code-bg: #15002b; --code-ink: #e9ddfb;
+  color-scheme: dark;
+}
+body {
+  background: var(--bg); color: var(--ink);
+  font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+  margin: 0; padding-block: 32px 48px; padding-inline: 16px;
+}
+/* Wide stage: the showcase frame wants room for two editors side by side,
+   so the column runs wide; running prose stays capped via ch widths. */
+.wrap { max-width: 1340px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+a { color: var(--accent); text-decoration: none; }
+a:hover, a:focus-visible { text-decoration: underline; }
+code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88em; }
+.eyebrow { text-transform: uppercase; letter-spacing: 0.08em; font-size: 12px; color: var(--muted); margin: 0 0 6px; }
+h1 { font-size: 27px; margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+.lede { color: var(--ink-2); font-size: 14.5px; margin: 8px 0 0; max-width: 66ch; }
+h2 { font-size: 17px; margin: 0 0 4px; }
+.sect-note { color: var(--ink-2); font-size: 13.5px; margin: 0 0 14px; }
+
+/* Control deck */
+.panel { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; min-width: 0; }
+.ctl-rows { display: flex; flex-direction: column; gap: 16px; }
+.ctl-label {
+  font-size: 11.5px; font-weight: 650; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--muted); margin: 0 0 8px;
+}
+.ctl-label b { color: var(--accent); font-size: 12.5px; }
+.chips { display: flex; gap: 9px; flex-wrap: wrap; align-items: center; }
+.chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  font: 600 13px/1 system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--ink); background: var(--surface);
+  border: 1.5px solid var(--grid); border-radius: 999px;
+  padding: 8px 13px 8px 9px; cursor: pointer; transition: border-color .25s, transform .15s;
+}
+.chip:hover { transform: translateY(-1px); }
+.chip.active { border-color: var(--accent); }
+.chip .sw { width: 16px; height: 16px; border-radius: 50%; border: 1px solid var(--border); }
+button.tour {
+  font: 600 13px/1 system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--btn-ink); background: var(--btn-bg); border: 0; border-radius: 999px;
+  padding: 9px 15px; cursor: pointer; margin-left: auto;
+}
+button.tour:hover { filter: brightness(1.08); }
+.combo { font-size: 13px; color: var(--ink-2); margin: 2px 0 0; }
+.combo b { color: var(--ink); }
+
+/* ============ the app frame (level 1 applies here) ============ */
+.frame {
+  border-radius: 12px; border: 1px solid var(--border); overflow: hidden; min-width: 0;
+  transition: background-color .5s ease;
+}
+.frame-bar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 18px; font: 600 13.5px/1 system-ui, sans-serif;
+  transition: background-color .5s ease, color .5s ease;
+}
+.frame-logo { width: 18px; height: 18px; border-radius: 4px; flex: none; transition: background-color .5s ease; }
+.frame-canvas { padding: 20px; transition: background-color .5s ease; }
+.frame-canvas > p { font-size: 13.5px; margin: 0 0 16px; }
+.iso-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 760px) { .iso-grid { grid-template-columns: 1fr; } }
+.iso-col { min-width: 0; }
+.iso-col .tag {
+  display: inline-block; font-size: 11px; font-weight: 650; letter-spacing: 0.05em; text-transform: uppercase;
+  border-radius: 5px; padding: 3px 8px; margin: 0 0 8px;
+}
+.tag.shadow-dom { background: #7e00fd; color: #ffffff; }
+.tag.light-dom { background: #fff75c; color: #4a3414; }
+.frame-note { font-size: 12.5px; margin: 16px 0 0 !important; opacity: 0.8; }
+
+/* ---- level 1 presets: "plain" (default), docs, sf, cms ---- */
+.frame[data-surround="none"] { background: var(--surface); }
+.frame[data-surround="none"] .frame-bar { background: var(--surface); color: var(--muted); border-bottom: 1px solid var(--grid); }
+.frame[data-surround="none"] .frame-logo { background: var(--grid); }
+.frame[data-surround="none"] .frame-canvas { background: var(--surface); color: var(--ink-2); }
+
+/* Docs site: dark slate header, airy canvas, serif body copy (the bleed). */
+.frame[data-surround="docs"] { background: #f5f7f9; }
+.frame[data-surround="docs"] .frame-bar { background: #1c2331; color: #ffffff; }
+.frame[data-surround="docs"] .frame-logo { background: #26dba5; }
+.frame[data-surround="docs"] .frame-canvas { background: #f5f7f9; color: #2d3748; }
+.frame[data-surround="docs"] p,
+.frame[data-surround="docs"] li,
+.frame[data-surround="docs"] blockquote { font-family: Georgia, "Times New Roman", serif; color: #2d3748; }
+.frame[data-surround="docs"] h2, .frame[data-surround="docs"] h3 { color: #10b981; font-family: system-ui, sans-serif; }
+.frame[data-surround="docs"] a { color: #0d9488; text-decoration: underline; }
+
+/* Salesforce Lightning shell (SLDS-inspired): blue waterline bar, #f3f3f3 canvas. */
+.frame[data-surround="sf"] { background: #f3f3f3; }
+.frame[data-surround="sf"] .frame-bar { background: #ffffff; color: #032d60; border-bottom: 3px solid #0176d3; }
+.frame[data-surround="sf"] .frame-logo { background: #0176d3; }
+.frame[data-surround="sf"] .frame-canvas { background: #f3f3f3; color: #181818; }
+.frame[data-surround="sf"] p,
+.frame[data-surround="sf"] li,
+.frame[data-surround="sf"] blockquote { font-family: "Salesforce Sans", -apple-system, "Segoe UI", sans-serif; font-size: 13px; color: #181818; }
+.frame[data-surround="sf"] h2, .frame[data-surround="sf"] h3 { color: #032d60; font-weight: 700; }
+.frame[data-surround="sf"] a { color: #0176d3; }
+
+/* CMS admin: dark admin bar, cool gray canvas, compact sans (the bleed). */
+.frame[data-surround="cms"] { background: #f0f0f1; }
+.frame[data-surround="cms"] .frame-bar { background: #1d2327; color: #f0f0f1; }
+.frame[data-surround="cms"] .frame-logo { background: #2271b1; }
+.frame[data-surround="cms"] .frame-canvas { background: #f0f0f1; color: #3c434a; }
+.frame[data-surround="cms"] p,
+.frame[data-surround="cms"] li,
+.frame[data-surround="cms"] blockquote { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 13px; color: #3c434a; }
+.frame[data-surround="cms"] h2, .frame[data-surround="cms"] h3 { color: #1d2327; }
+.frame[data-surround="cms"] a { color: #2271b1; text-decoration: underline; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .frame p, .frame li, .frame h2, .frame h3 { transition: color .45s ease, background-color .45s ease; }
+}
+
+/* ---- frame layout: optional sidebar + tabs + main ---- */
+.frame-tabs { display: none; gap: 2px; padding: 0 18px; background: #ffffff; border-bottom: 1px solid #e5e5e5; }
+.frame[data-surround="sf"] .frame-tabs { display: flex; }
+.frame-tabs span { font: 600 12.5px/1 system-ui, sans-serif; color: #444; padding: 10px 14px; border-bottom: 3px solid transparent; }
+.frame-tabs span.on { color: #0176d3; border-bottom-color: #0176d3; }
+.frame-body { display: grid; grid-template-columns: 215px 1fr; }
+.frame[data-surround="none"] .frame-body { grid-template-columns: 1fr; }
+.frame[data-surround="none"] .frame-side { display: none; }
+@media (max-width: 860px) { .frame-body { grid-template-columns: 1fr !important; } }
+.frame-side { padding: 16px 14px; font: 13px/1.5 system-ui, sans-serif; min-width: 0; transition: background-color .5s ease, color .5s ease; }
+.frame-main { min-width: 0; }
+
+/* sidebar looks per preset (static mock furniture, not functional) */
+.frame[data-surround="docs"] .frame-side { background: #eef1f5; color: #2d3748; border-right: 1px solid #dde3ea; }
+.frame[data-surround="sf"] .frame-side { background: #ffffff; color: #181818; border-right: 1px solid #e5e5e5; }
+.frame[data-surround="cms"] .frame-side { background: #1d2327; color: #c3c4c7; }
+.s-search { border: 1px solid currentColor; opacity: .75; border-radius: 6px; padding: 7px 10px; font-size: 12.5px; margin-bottom: 12px; }
+.s-tree { list-style: none; margin: 0; padding: 0; }
+.s-tree li { padding: 5px 8px; border-radius: 5px; }
+.s-tree li.on { font-weight: 700; }
+.frame[data-surround="docs"] .s-tree li.on { background: #d9f2e9; color: #0d7a5f; }
+.frame[data-surround="cms"] .s-tree li.on { background: #2271b1; color: #ffffff; }
+.s-tree ul { list-style: none; margin: 2px 0 2px 14px; padding: 0; }
+.s-ver { margin-top: 14px; font-size: 11px; opacity: .6; }
+.cms-add { background: #2271b1; color: #fff; border-radius: 4px; text-align: center; font-weight: 650; padding: 8px; margin-bottom: 12px; }
+.sf-card { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+.sf-ava { width: 34px; height: 34px; border-radius: 6px; background: #0176d3; color: #fff; font: 700 13px/34px system-ui; text-align: center; flex: none; }
+.sf-kicker { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: #706e6b; }
+.sf-name { font-weight: 750; font-size: 15px; color: #032d60; }
+.sf-actions { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+.sf-actions span { border: 1px solid #c9c9c9; color: #0176d3; font: 600 12px/1 system-ui; border-radius: 4px; padding: 6px 10px; background: #fff; }
+.sf-side-list { margin: 0; padding: 0 0 0 2px; list-style: none; }
+.sf-side-list li { padding: 4px 0; font-size: 12.5px; }
+
+/* the host-page copy of the sample HTML (page DOM, not an editor) */
+.host-copy {
+  border: 1.5px dashed currentColor; border-radius: 8px; padding: 4px 16px 10px; margin: 10px 0 16px;
+  opacity: .96;
+}
+.host-copy .tag { margin-top: 10px; }
+.tag.host { background: #868d98; color: #ffffff; }
+
+/* bleed report */
+.bleed { margin: 16px 0 0; font-size: 12.5px; }
+.bleed-title { font-weight: 700; margin: 0 0 6px; font-size: 12.5px; letter-spacing: .04em; text-transform: uppercase; opacity: .75; }
+.bleed ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 5px; }
+.bleed li { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.bleed code { background: rgba(0,0,0,.08); border-radius: 4px; padding: 1px 6px; }
+.bleed .hits { font-weight: 650; }
+.bleed .ok { opacity: .75; }
+.measured { margin-top: 4px; overflow-x: auto; }
+table.diffs { border-collapse: collapse; font: 11.5px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; min-width: 560px; }
+table.diffs th { text-align: left; font: 650 10.5px/1.4 system-ui, sans-serif; text-transform: uppercase; letter-spacing: .05em; opacity: .65; padding: 3px 14px 3px 0; }
+table.diffs td { padding: 3px 14px 3px 0; border-top: 1px solid rgba(0,0,0,.12); white-space: nowrap; }
+.d-ok { opacity: .7; }
+.d-bad { font-weight: 700; }
+
+/* Facts + Salesforce recipe */
+ol.steps { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 9px; font-size: 14px; color: var(--ink-2); }
+ol.steps b { color: var(--ink); }
+.codebox { position: relative; margin-top: 16px; }
+.codebox pre {
+  background: var(--code-bg); color: var(--code-ink);
+  border-radius: 8px; padding: 16px; overflow-x: auto;
+  font: 12.5px/1.55 ui-monospace, SFMono-Regular, Menlo, monospace;
+  margin: 0; tab-size: 2;
+}
+.codebox button.copy {
+  position: absolute; top: 10px; right: 10px;
+  font: 600 12px/1 system-ui, sans-serif; color: #1c0038; background: #afe229;
+  border: 0; border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.facts h3 { font-size: 14px; margin: 0 0 4px; }
+.facts p { font-size: 13.5px; color: var(--ink-2); margin: 0; }
+@media (max-width: 760px) { .facts { grid-template-columns: 1fr; } }
+.foot { color: var(--muted); font-size: 12.5px; border-top: 1px solid var(--grid); padding-top: 14px; }
+.foot p { margin: 4px 0; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) {
+  .chip, .frame, .frame-bar, .frame-canvas, .frame-logo { transition: none; }
+}
