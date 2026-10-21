@@ -402,6 +402,59 @@
     .then(scheduleMeasure)
     .catch(function (e) { bootError(isoLight, String(e && e.message || e)); });
 
+  /* ================= syntax highlighting for the Visualforce snippet =================
+     Reads the <pre>'s textContent, re-emits it as spans. Markup (apex/HTML) and the
+     inline <script> body get separate tokenizers; each alternation is scanned left to
+     right so a quote inside a comment, or "//" inside a string, lands in the right token. */
+  function esc(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  function tok(cls, s) { return '<span class="tok-' + cls + '">' + esc(s) + "</span>"; }
+  function hlMerge(s) {              /* {!$Resource.X} merge fields inside strings */
+    var re = /\{![^}]*\}/g, out = "", last = 0, m;
+    while ((m = re.exec(s))) { out += esc(s.slice(last, m.index)) + tok("m", m[0]); last = re.lastIndex; }
+    return out + esc(s.slice(last));
+  }
+  function hlAttrs(s) {
+    var re = /("[^"]*"|'[^']*')|([\w:.-]+)(?=\s*=)/g, out = "", last = 0, m;
+    while ((m = re.exec(s))) {
+      out += esc(s.slice(last, m.index));
+      out += m[1] ? '<span class="tok-s">' + hlMerge(m[1]) + "</span>" : tok("a", m[2]);
+      last = re.lastIndex;
+    }
+    return out + esc(s.slice(last));
+  }
+  function hlMarkup(s) {
+    var re = /(<!--[\s\S]*?-->)|(<\/?[\w:.-]+)([^>]*?)(\/?>)/g, out = "", last = 0, m;
+    while ((m = re.exec(s))) {
+      out += esc(s.slice(last, m.index));
+      out += m[1] ? tok("c", m[1]) : tok("t", m[2]) + hlAttrs(m[3]) + tok("t", m[4]);
+      last = re.lastIndex;
+    }
+    return out + esc(s.slice(last));
+  }
+  function hlJs(s) {
+    var re = /(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|('(?:[^'\\\n]|\\.)*'|"(?:[^"\\\n]|\\.)*"|`(?:[^`\\]|\\.)*`)|\b(const|let|var|await|async|new|for|of|in|function|return|if|else|import|export|class|true|false|null|undefined)\b|\b(\d+(?:\.\d+)?)\b/g;
+    var out = "", last = 0, m;
+    while ((m = re.exec(s))) {
+      out += esc(s.slice(last, m.index));
+      if (m[1]) out += tok("c", m[1]);
+      else if (m[2]) out += '<span class="tok-s">' + hlMerge(m[2]) + "</span>";
+      else if (m[3]) out += tok("k", m[3]);
+      else out += tok("n", m[4]);
+      last = re.lastIndex;
+    }
+    return out + esc(s.slice(last));
+  }
+  function highlightCode(pre) {
+    var s = pre.textContent, html = "", last = 0, m;
+    var re = /(<script\b[^>]*>)([\s\S]*?)(<\/script>)/g;
+    while ((m = re.exec(s))) {
+      html += hlMarkup(s.slice(last, m.index)) + hlMarkup(m[1]) + hlJs(m[2]) + hlMarkup(m[3]);
+      last = re.lastIndex;
+    }
+    pre.innerHTML = html + hlMarkup(s.slice(last));
+  }
+  try { highlightCode(document.getElementById("vfCode")); } catch (e) { /* plain text is a fine fallback */ }
+
   /* ================= copy button ================= */
   var copyBtn = document.getElementById("copyVf");
   copyBtn.addEventListener("click", function () {

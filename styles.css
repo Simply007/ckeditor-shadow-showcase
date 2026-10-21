@@ -213,6 +213,15 @@ ol.steps b { color: var(--ink); }
   font: 12.5px/1.55 ui-monospace, SFMono-Regular, Menlo, monospace;
   margin: 0; tab-size: 2;
 }
+/* Syntax tokens for the Visualforce snippet. The code surface is dark in both
+   themes, so one palette serves; every token ≥ 4.5:1 on --code-bg. */
+.codebox pre .tok-c { color: #a897bb; font-style: italic; }   /* comments */
+.codebox pre .tok-t { color: #b266fe; }                       /* tags, brackets */
+.codebox pre .tok-a { color: #fff75c; }                       /* attribute names */
+.codebox pre .tok-s { color: #afe229; }                       /* strings */
+.codebox pre .tok-k { color: #e0b0ff; font-weight: 600; }     /* JS keywords */
+.codebox pre .tok-n { color: #7fd1ff; }                       /* numbers */
+.codebox pre .tok-m { color: #ffb86c; }                       /* {!merge fields} */
 .codebox button.copy {
   position: absolute; top: 10px; right: 10px;
   font: 600 12px/1 system-ui, sans-serif; color: #1c0038; background: #afe229;
