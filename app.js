@@ -197,9 +197,15 @@
   adoptStyles(shadow);
 
   /* Content-style carriers: one per tree holding an editing area. */
+  /* BASE_CONTENT is always present: v49's ckeditor5.css has no .ck-content a
+     rule (--ck-color-link-default only paints the link balloon's preview), so
+     without it document links inherit whatever "a" rule reaches the tree. */
+  var BASE_CONTENT = ".ck.ck-content a{color:var(--ck-color-link-default)}";
   var shadowContentStyle = document.createElement("style");
+  shadowContentStyle.textContent = BASE_CONTENT;
   shadow.appendChild(shadowContentStyle);
   var docContentStyle = document.createElement("style");
+  docContentStyle.textContent = BASE_CONTENT;
   document.head.appendChild(docContentStyle);
 
   /* Theme vars go on the shadow HOST elements (an inline value on the host
@@ -216,7 +222,7 @@
     combo.innerHTML = "Current mix — <b>1</b> " + SURROUNDS[state.surround].name +
       " · <b>2</b> " + THEMES[state.theme].name +
       " · <b>3</b> " + CONTENT_STYLES[state.content].name +
-      ". The shadow editor follows 2 + 3 only; the light editor also picks up 1.";
+      ". With Shadow DOM the editor follows 2 + 3 only; without it, the editor also picks up 1.";
   }
 
   function makeChips(containerId, items, onPick, before) {
@@ -249,7 +255,7 @@
     } else {
       body = "<ul>" + s.bleeds.map(function (b) {
         return "<li><code>" + b.rule + "</code> — " + b.effect +
-          ' <span class="hits">→ hits host copy ✓ · light editor ✓ · shadow editor ✕</span></li>';
+          ' <span class="hits">→ hits host copy ✓ · without Shadow DOM ✓ · with Shadow DOM ✕</span></li>';
       }).join("") + "</ul>";
     }
     bleedEl.innerHTML = '<p class="bleed-title">What leaks where</p>' + body +
@@ -295,8 +301,8 @@
               : '<span class="d-bad">⚠ overridden by the surroundings</span>') + "</td></tr>";
     }).join("");
     out.innerHTML =
-      '<p class="bleed-title" style="margin-top:12px">Measured in your browser — what survived in the light editor</p>' +
-      '<table class="diffs"><thead><tr><th>first element</th><th>shadow editor (intended)</th><th>light editor (actual)</th><th>verdict</th></tr></thead>' +
+      '<p class="bleed-title" style="margin-top:12px">Measured in your browser — what survived in the editor without Shadow DOM</p>' +
+      '<table class="diffs"><thead><tr><th>first element</th><th>with Shadow DOM (intended)</th><th>without Shadow DOM (actual)</th><th>verdict</th></tr></thead>' +
       "<tbody>" + rows + "</tbody></table>";
   }
 
@@ -306,7 +312,7 @@
     frame.dataset.surround = s.id;
     frameTitle.textContent = s.title;
     frameSide.innerHTML = s.side;
-    tagLight.textContent = s.bleeds.length ? "Light DOM editor — host styles leak in" : "Light DOM editor";
+    tagLight.textContent = s.bleeds.length ? "Without Shadow DOM — host styles leak in" : "Without Shadow DOM";
     renderBleed(s);
     setActive(surroundBox, i); updateCombo();
   });
@@ -338,8 +344,8 @@
 
   var contentBox = makeChips("contentChips", CONTENT_STYLES, function (i) {
     state.content = i;
-    shadowContentStyle.textContent = CONTENT_STYLES[i].css;
-    docContentStyle.textContent = CONTENT_STYLES[i].css;
+    shadowContentStyle.textContent = BASE_CONTENT + CONTENT_STYLES[i].css;
+    docContentStyle.textContent = BASE_CONTENT + CONTENT_STYLES[i].css;
     setActive(contentBox, i); updateCombo(); scheduleMeasure();
   });
 

@@ -18,7 +18,7 @@
   <header>
     <p class="eyebrow">CKEditor 5 v49 &middot; UMD build &middot; Shadow DOM</p>
     <h1>CKEditor Shadow Showcase</h1>
-    <p class="lede">Three independent style levels — <b>1</b> the surroundings (the host app's page styles), <b>2</b> the editor theme (toolbar, dropdowns, panels), <b>3</b> the content styles (the document inside the editing area). Mix any combination below and watch two identically configured editors react: the <b>shadow-DOM</b> editor only ever changes when you change levels 2 or 3, while the <b>light-DOM</b> twin also inherits whatever level 1 throws at the page. Built after the official <a href="https://ckeditor.com/docs/ckeditor5/latest/getting-started/setup/shadow-dom.html">shadow DOM guide</a>.</p>
+    <p class="lede">Three independent style levels — <b>1</b> the surroundings (the host app's page styles), <b>2</b> the editor theme (toolbar, dropdowns, panels), <b>3</b> the content styles (the document inside the editing area). Mix any combination below and watch two identically configured editors react: the editor <b>with Shadow DOM</b> only ever changes when you change levels 2 or 3, while the twin <b>without Shadow DOM</b> also inherits whatever level 1 throws at the page. Built after the official <a href="https://ckeditor.com/docs/ckeditor5/latest/getting-started/setup/shadow-dom.html">shadow DOM guide</a>.</p>
   </header>
 
   <section class="panel ctl-rows">
@@ -50,11 +50,11 @@
           </div>
           <div class="iso-grid">
             <div class="iso-col">
-              <span class="tag shadow-dom" id="tagShadow">Shadow DOM editor</span>
+              <span class="tag shadow-dom" id="tagShadow">With Shadow DOM</span>
               <div id="host" class="ck-theme-host"><p style="font:13px system-ui;color:#868d98;padding:20px 0;text-align:center">Booting CKEditor 5 from jsDelivr…</p></div>
             </div>
             <div class="iso-col">
-              <span class="tag light-dom" id="tagLight">Light DOM editor</span>
+              <span class="tag light-dom" id="tagLight">Without Shadow DOM</span>
               <div id="isoLight"></div>
             </div>
           </div>
@@ -69,7 +69,7 @@
     <div class="facts">
       <div>
         <h3>1 · Surroundings stay out</h3>
-        <p>Page style sheets do not match elements inside a shadow tree. The host app's rules (<code>p</code>, <code>h2</code>, <code>li</code>…) restyle the light-DOM editor's document because it <em>is</em> page DOM; the shadow editor needs no counter-measures. Its floating UI is isolated the same way — it mounts in a dedicated shadow root at the end of <code>&lt;body&gt;</code> via <code>config.ui.overlayContainer</code>.</p>
+        <p>Page style sheets do not match elements inside a shadow tree. The host app's rules (<code>p</code>, <code>h2</code>, <code>li</code>…) restyle the document of the editor without Shadow DOM because it <em>is</em> page DOM; the shadow editor needs no counter-measures. Its floating UI is isolated the same way — it mounts in a dedicated shadow root at the end of <code>&lt;body&gt;</code> via <code>config.ui.overlayContainer</code>.</p>
       </div>
       <div>
         <h3>2 · Theme on the host, not <code>:root</code></h3>
