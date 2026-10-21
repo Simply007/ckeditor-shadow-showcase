@@ -313,13 +313,13 @@
     var rows = Object.keys(sh).map(function (k) {
       if (sh[k] == null || li[k] == null) return "";
       var same = sh[k] === li[k];
-      return "<tr><td>" + k + "</td><td>" + sh[k] + "</td><td>" + li[k] + "</td><td>" +
+      return "<tr><td>" + k + "</td><td>" + li[k] + "</td><td>" + sh[k] + "</td><td>" +
         (same ? '<span class="d-ok">✓ intact</span>'
               : '<span class="d-bad">⚠ overridden by the surroundings</span>') + "</td></tr>";
     }).join("");
     out.innerHTML =
       '<p class="bleed-title" style="margin-top:12px">Measured in your browser — what survived in the editor without Shadow DOM</p>' +
-      '<table class="diffs"><thead><tr><th>first element</th><th>with Shadow DOM (intended)</th><th>without Shadow DOM (actual)</th><th>verdict</th></tr></thead>' +
+      '<table class="diffs"><thead><tr><th>first element</th><th>without Shadow DOM (actual)</th><th>with Shadow DOM (intended)</th><th>verdict</th></tr></thead>' +
       "<tbody>" + rows + "</tbody></table>";
   }
 
@@ -329,7 +329,7 @@
     frame.dataset.surround = s.id;
     frameTitle.textContent = s.title;
     frameSide.innerHTML = s.side;
-    tagLight.textContent = s.bleeds.length ? "Without Shadow DOM — host styles leak in" : "Without Shadow DOM";
+    tagLight.textContent = s.bleeds.length ? "Without Shadow DOM — host styles leak in" : "Without Shadow DOM — today's default";
     renderBleed(s);
     setActive(surroundBox, i); updateCombo();
   });

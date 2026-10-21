@@ -50,16 +50,16 @@
           </div>
           <div class="iso-grid">
             <div class="iso-col">
+              <span class="tag light-dom" id="tagLight">Without Shadow DOM — today's default</span>
+              <div id="isoLight"></div>
+            </div>
+            <div class="iso-col">
               <span class="tag shadow-dom" id="tagShadow">With Shadow DOM</span>
               <div id="host" class="ck-theme-host"><p style="font:13px system-ui;color:#868d98;padding:20px 0;text-align:center">Booting CKEditor 5 from jsDelivr…</p></div>
             </div>
-            <div class="iso-col">
-              <span class="tag light-dom" id="tagLight">Without Shadow DOM</span>
-              <div id="isoLight"></div>
-            </div>
           </div>
           <div class="bleed" id="bleed"></div>
-          <p class="frame-note">The dashed block and both editors render <em>the same HTML</em>. Same build, same configuration, same theme, same content styles — the only difference is the tree each copy lives in. Open devtools: the left editor sits under <code>#shadow-root</code>.</p>
+          <p class="frame-note">The dashed block and both editors render <em>the same HTML</em>. Same build, same configuration, same theme, same content styles — the only difference is the tree each copy lives in. Open devtools: the right editor sits under <code>#shadow-root</code>.</p>
         </div>
       </div>
     </div>
