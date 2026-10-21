@@ -141,16 +141,19 @@
       ".ck.ck-content{font-family:Georgia,'Times New Roman',serif;font-size:17px;line-height:1.75}" +
       ".ck.ck-content h2,.ck.ck-content h3{font-family:Georgia,serif;font-weight:700;letter-spacing:-0.01em}" +
       ".ck.ck-content blockquote{font-style:italic;border-left-width:3px}" +
-      ".ck.ck-content ul li::marker{content:'— '}" },
+      ".ck.ck-content ul li::marker{content:'— '}" +
+      ".ck.ck-content a{color:color-mix(in oklab,var(--ck-content-font-color,#000) 35%,#c0392b);text-underline-offset:3px;text-decoration-thickness:1px}" },
     { name: "Mono", sw: "#394556", css:
       ".ck.ck-content{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;line-height:1.65}" +
       ".ck.ck-content h2,.ck.ck-content h3{text-transform:uppercase;letter-spacing:0.07em;font-size:1.05em}" +
-      ".ck.ck-content ul li::marker{content:'▸ '}" },
+      ".ck.ck-content ul li::marker{content:'▸ '}" +
+      ".ck.ck-content a{color:color-mix(in oklab,var(--ck-content-font-color,#000) 35%,#0e9f8e);text-decoration:none;border-bottom:1px dashed currentColor}" },
     { name: "Billboard", sw: "#7e00fd", css:
       ".ck.ck-content{font-size:19px;line-height:1.6}" +
       ".ck.ck-content h2{font-size:2em;font-weight:800;letter-spacing:-0.02em}" +
       ".ck.ck-content h3{font-size:1.4em;font-weight:750}" +
-      ".ck.ck-content blockquote{font-size:1.15em;font-weight:600;border-left-width:4px}" }
+      ".ck.ck-content blockquote{font-size:1.15em;font-weight:600;border-left-width:4px}" +
+      ".ck.ck-content a{color:color-mix(in oklab,var(--ck-content-font-color,#000) 30%,#8b3dff);font-weight:700;text-decoration-thickness:2px}" }
   ];
 
   /* ================= shadow roots & style adoption ================= */
@@ -197,15 +200,14 @@
   adoptStyles(shadow);
 
   /* Content-style carriers: one per tree holding an editing area. */
-  /* BASE_CONTENT is always present: v49's ckeditor5.css has no .ck-content a
-     rule (--ck-color-link-default only paints the link balloon's preview), so
-     without it document links inherit whatever "a" rule reaches the tree. */
-  var BASE_CONTENT = ".ck.ck-content a{color:var(--ck-color-link-default)}";
+  /* Note that v49's ckeditor5.css has no .ck-content a rule
+     (--ck-color-link-default only paints the link balloon's preview), so the
+     LINK COLOR is a content-style concern: the Default preset leaves it to
+     inherit from whatever "a" rule reaches the tree; the other presets set
+     their own. */
   var shadowContentStyle = document.createElement("style");
-  shadowContentStyle.textContent = BASE_CONTENT;
   shadow.appendChild(shadowContentStyle);
   var docContentStyle = document.createElement("style");
-  docContentStyle.textContent = BASE_CONTENT;
   document.head.appendChild(docContentStyle);
 
   /* Theme vars go on the shadow HOST elements (an inline value on the host
@@ -251,7 +253,7 @@
   function renderBleed(s) {
     var body;
     if (!s.bleeds.length) {
-      body = '<ul><li><span class="ok">No host app styles active — all three copies render alike. Pick a surroundings preset to see the bleed.</span></li></ul>';
+      body = '<ul><li><span class="ok">No host app styles active beyond the page\'s own <code>a { color }</code>, which already reaches the editor without Shadow DOM (compare the link row below). Pick a surroundings preset to see the full bleed.</span></li></ul>';
     } else {
       body = "<ul>" + s.bleeds.map(function (b) {
         return "<li><code>" + b.rule + "</code> — " + b.effect +
@@ -269,13 +271,28 @@
     if (measureTimer) clearTimeout(measureTimer);
     measureTimer = setTimeout(measure, 650); /* wait out the color transitions */
   }
+  /* color-mix() results come back as oklab(); print them as rgb() like the rest */
+  function okToRgb(c) {
+    var m = /^oklab\(([-\d.]+) ([-\d.]+) ([-\d.]+)\)$/.exec(c);
+    if (!m) return c;
+    var L = +m[1], a = +m[2], b = +m[3];
+    var l_ = L + 0.3963377774 * a + 0.2158037573 * b, m_ = L - 0.1055613458 * a - 0.0638541728 * b, s_ = L - 0.0894841775 * a - 1.2914855480 * b;
+    var l = l_ * l_ * l_, mm = m_ * m_ * m_, ss = s_ * s_ * s_;
+    function g(v) { v = Math.min(1, Math.max(0, v)); return Math.round(255 * (v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1 / 2.4) - 0.055)); }
+    return "rgb(" + g(4.0767416621 * l - 3.3077115913 * mm + 0.2309699292 * ss) + ", " +
+      g(-1.2684380046 * l + 2.6097574011 * mm - 0.3413193965 * ss) + ", " +
+      g(-0.0041960863 * l - 0.7034186147 * mm + 1.7076147010 * ss) + ")";
+  }
   function probe(scopeRoot) {
     if (!scopeRoot) return null;
     function cs(sel, prop) {
-      var el = scopeRoot.querySelector(sel);
+      /* selectors in priority order: inside an editor, ".ck-content a" must win
+         over any "a" the editor UI renders earlier in the tree */
+      var el = null;
+      sel.split(", ").some(function (one) { el = scopeRoot.querySelector(one); return !!el; });
       if (!el) return null;
       var v = getComputedStyle(el)[prop];
-      return prop === "fontFamily" ? v.split(",")[0].replace(/["']/g, "") : v;
+      return prop === "fontFamily" ? v.split(",")[0].replace(/["']/g, "") : okToRgb(v);
     }
     return {
       "paragraph font": cs(".ck-content p, p", "fontFamily"),
@@ -344,8 +361,8 @@
 
   var contentBox = makeChips("contentChips", CONTENT_STYLES, function (i) {
     state.content = i;
-    shadowContentStyle.textContent = BASE_CONTENT + CONTENT_STYLES[i].css;
-    docContentStyle.textContent = BASE_CONTENT + CONTENT_STYLES[i].css;
+    shadowContentStyle.textContent = CONTENT_STYLES[i].css;
+    docContentStyle.textContent = CONTENT_STYLES[i].css;
     setActive(contentBox, i); updateCombo(); scheduleMeasure();
   });
 
