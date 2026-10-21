@@ -168,6 +168,7 @@
 </pre>
     </div>
     <p class="sect-note" style="margin-top:12px">The page reuses this showcase's shadow-DOM wrapper: adopted stylesheets, a dedicated overlay container, themes on the shadow hosts. <code>licenseKey: 'GPL'</code> runs the open-source build under GPL terms — swap in your commercial key for production or premium features.</p>
+    <p class="sect-note" style="margin-top:8px"><b>Why Visualforce and not a Lightning Web Component?</b> The iframe route is what the current official guide documents, and it is the pragmatic one: a Visualforce page gives the editor a plain browser document, so the shadow root, the overlay container at the end of <code>&lt;body&gt;</code>, constructed stylesheets and selection APIs all behave as in this showcase. Inside an LWC the editor would have to live in the component's own shadow tree under Lightning Web Security, where third-party DOM access and globals are mediated; that is the more native demo, but it is not covered by the guide and not verified here. Treat the snippet above as the supported path, and the LWC route as an experiment to run.</p>
   </section>
 
   <footer class="foot">
