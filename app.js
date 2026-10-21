@@ -446,7 +446,7 @@
     return out + esc(s.slice(last));
   }
   function hlMarkup(s) {
-    var re = /(<!--[\s\S]*?-->)|(<\/?[\w:.-]+)([^>]*?)(\/?>)/g, out = "", last = 0, m;
+    var re = /(<!--[\s\S]*?-->)|(<[\/?]?[\w:.-]+)([^>]*?)([\/?]?>)/g, out = "", last = 0, m;
     while ((m = re.exec(s))) {
       out += esc(s.slice(last, m.index));
       out += m[1] ? tok("c", m[1]) : tok("t", m[2]) + hlAttrs(m[3]) + tok("t", m[4]);
@@ -455,7 +455,7 @@
     return out + esc(s.slice(last));
   }
   function hlJs(s) {
-    var re = /(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|('(?:[^'\\\n]|\\.)*'|"(?:[^"\\\n]|\\.)*"|`(?:[^`\\]|\\.)*`)|\b(const|let|var|await|async|new|for|of|in|function|return|if|else|import|export|class|true|false|null|undefined)\b|\b(\d+(?:\.\d+)?)\b/g;
+    var re = /(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|('(?:[^'\\\n]|\\.)*'|"(?:[^"\\\n]|\\.)*"|`(?:[^`\\]|\\.)*`)|\b(const|let|var|await|async|new|for|of|in|function|return|if|else|try|catch|throw|import|export|from|default|class|extends|static|this|true|false|null|undefined)\b|\b(\d+(?:\.\d+)?)\b/g;
     var out = "", last = 0, m;
     while ((m = re.exec(s))) {
       out += esc(s.slice(last, m.index));
@@ -476,21 +476,28 @@
     }
     pre.innerHTML = html + hlMarkup(s.slice(last));
   }
-  try { highlightCode(document.getElementById("vfCode")); } catch (e) { /* plain text is a fine fallback */ }
+  function highlightByLang(pre) {
+    var lang = pre.dataset.lang;
+    if (lang === "js") pre.innerHTML = hlJs(pre.textContent);
+    else if (lang === "xml") pre.innerHTML = hlMarkup(pre.textContent);
+    else highlightCode(pre);
+  }
+  try { document.querySelectorAll("pre[data-lang]").forEach(highlightByLang); } catch (e) { /* plain text is a fine fallback */ }
 
-  /* ================= copy button ================= */
-  var copyBtn = document.getElementById("copyVf");
-  copyBtn.addEventListener("click", function () {
-    var text = document.getElementById("vfCode").textContent;
-    navigator.clipboard.writeText(text).then(function () {
-      copyBtn.textContent = "Copied ✓";
-      setTimeout(function () { copyBtn.textContent = "Copy"; }, 1600);
-    }).catch(function () {
-      var range = document.createRange();
-      range.selectNodeContents(document.getElementById("vfCode"));
-      var sel = window.getSelection();
-      sel.removeAllRanges(); sel.addRange(range);
-      copyBtn.textContent = "Select + ⌘C";
+  /* ================= copy buttons ================= */
+  document.querySelectorAll(".codebox button.copy[data-target]").forEach(function (btn) {
+    var pre = document.getElementById(btn.dataset.target);
+    btn.addEventListener("click", function () {
+      navigator.clipboard.writeText(pre.textContent).then(function () {
+        btn.textContent = "Copied ✓";
+        setTimeout(function () { btn.textContent = "Copy"; }, 1600);
+      }).catch(function () {
+        var range = document.createRange();
+        range.selectNodeContents(pre);
+        var sel = window.getSelection();
+        sel.removeAllRanges(); sel.addRange(range);
+        btn.textContent = "Select + ⌘C";
+      });
     });
   });
   }).catch(function (e) { console.error("CKEditor stylesheet failed to load:", e); });
