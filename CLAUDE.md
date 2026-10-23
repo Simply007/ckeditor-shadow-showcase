@@ -1,8 +1,8 @@
 # CLAUDE.md — CKEditor Shadow Showcase
 
 Context for AI-assisted edits. This is a **plain static site** — no build step,
-no package.json, no framework. Edit the files directly and push to `main`;
-GitHub Pages deploys from the `main` branch root automatically
+no package.json, no framework. Edit the files directly and land them on
+`main` (via a PR branch); GitHub Pages deploys from the `main` branch root
 (live at https://ondrej.chrastina.dev/ckeditor-shadow-showcase/).
 
 ## Running and testing locally
@@ -24,8 +24,12 @@ console — editor boot errors surface there, not on the page.
   overlay container the editor logs `ui-overlay-container-not-configured`
   and balloons/dialogs may render unstyled or clipped. Each mount target
   gets its own `.ck-body-wrapper` — don't query for a single global one.
-- The light-DOM twin editor is styled by the `<link>` to the same CSS file
-  in `index.html`.
+- The twin editor without Shadow DOM (`#isoLight`, left column, labelled
+  "today's default") is styled by the `<link>` to the same CSS file in
+  `index.html`. The shadow editor (`#host`) is the right column. Keep the
+  "without / with Shadow DOM" wording in labels, bleed report and
+  divergence table — the columns were deliberately swapped so the
+  familiar setup comes first.
 - `THEMED` is the list of elements that receive theme variables as **inline
   styles**: `document.documentElement` (for the light editor), the editor
   shadow host, and the overlay host. Any new shadow host holding editor UI
@@ -56,6 +60,14 @@ console — editor boot errors surface there, not on the page.
 5. **v49 replaced many legacy component vars** (toolbar-background,
    dropdown-panel-*, input-*, button-on-*) with a semantic layer cascading
    from `base-*`. Don't reintroduce legacy var names; extend `expand()`.
+6. **Link color is not a theme token.** v49's `ckeditor5.css` has no
+   `.ck-content a` rule; `--ck-color-link-default` only paints the link
+   balloon's preview. Link color therefore lives in `CONTENT_STYLES`: the
+   Default preset deliberately leaves it to inherit (so the page's
+   `a { color }` visibly reaches the editor without Shadow DOM — that leak
+   is part of the demo), the other presets set `.ck.ck-content a` with
+   `color-mix()` against `--ck-content-font-color` so it tracks dark
+   themes. Don't "fix" the Default preset by adding a link color.
 
 ## Adding or changing a theme
 
@@ -73,10 +85,25 @@ primary-button labels ≥ 4.5:1; focus ring vs. surroundings ≥ 3:1.
   code probes the light editor via `isoLight.parentElement`, not `#isoLight`.
 - **`scheduleMeasure()` waits 650ms** before reading `getComputedStyle`,
   because CSS color transitions otherwise return intermediate values.
-- The Salesforce Visualforce recipe lives in `index.html` inside
-  `<pre id="vfCode">` as **HTML-escaped** markup (`&lt;apex:page&gt;` …);
-  edit it escaped, and keep `licenseKey: 'GPL'` (no commercial keys in a
-  public repo).
+- **`probe()` takes comma-separated selectors in priority order** (first
+  match wins), so `.ck-content a` beats any `a` the editor UI renders
+  earlier in the tree. `color-mix()` values come back as `oklab(...)`;
+  `okToRgb()` normalises them to `rgb()` so the divergence table compares
+  like with like.
+- **Salesforce section is two recipes side by side** (`.sf-grid` in
+  `index.html`): the documented Visualforce-in-an-iframe page
+  (`<pre id="vfCode">`) and a *draft, never run in an org* Lightning Web
+  Component (`lwcHtml`, `lwcJs`, `lwcXml`). All four blocks are
+  **HTML-escaped** markup (`&lt;apex:page&gt;` …) — edit them escaped — and
+  keep `licenseKey: 'GPL'` (no commercial keys in a public repo). The LWC
+  attaches its own *open* shadow roots to `lwc:dom="manual"` divs because
+  Lightning Web Security closes component roots and CKEditor needs an open
+  one; keep the "draft for review" badge and checklist until someone has
+  verified it in an org.
+- **Code blocks are highlighted by a homegrown tokenizer in `app.js`**, not
+  a library. `<pre data-lang="markup|js|xml">` picks the tokenizer; copy
+  buttons bind via `data-target="<pre id>"`. Token colors are the `.tok-*`
+  classes in `styles.css`, audited ≥ 4.5:1 on the dark code surface.
 - Upstream limitation (not a bug here): Safari and Chromium do not report
   backward mouse selections inside a shadow root, so selection-anchored UI
   appears at the selection's end. Closed shadow roots are unsupported.
@@ -86,9 +113,20 @@ primary-button labels ≥ 4.5:1; focus ring vs. surroundings ≥ 3:1.
 Both vendored files must move together, pinned to the same version:
 `vendor/ckeditor5.umd.js` and `vendor/ckeditor5.css` from
 `https://cdn.jsdelivr.net/npm/ckeditor5@<ver>/dist/browser/`. The UMD global
-is `CKEDITOR`. Update the version strings in `index.html` (header, footer)
-and `README.md`. Re-test every theme in light and dark mode after an
-upgrade — the token set is what usually changes.
+is `CKEDITOR`. Update the version strings in `index.html` (header, footer,
+stylesheet comment) and `README.md`. The Salesforce recipes reference the
+vendored files only by static-resource name, so they need no edit. Re-test
+every theme in light and dark mode after an upgrade — the token set is what
+usually changes.
+
+## Repo housekeeping
+
+- `.gitignore` covers macOS metadata (`.DS_Store`, `._*`, …), `.vscode/`,
+  `.idea/` and logs. `.claude/skills/ckeditor/` is the official CKEditor
+  agent skill (https://github.com/ckeditor/skills), vendored for anyone who
+  clones the repo; it is the manual-copy install from that README, so to
+  update it re-copy `skills/ckeditor/` from the upstream repo.
+- Work on a branch and open a PR to `main`; Pages deploys on merge.
 
 ## Provenance
 
