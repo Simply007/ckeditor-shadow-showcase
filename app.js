@@ -141,16 +141,19 @@
       ".ck.ck-content{font-family:Georgia,'Times New Roman',serif;font-size:17px;line-height:1.75}" +
       ".ck.ck-content h2,.ck.ck-content h3{font-family:Georgia,serif;font-weight:700;letter-spacing:-0.01em}" +
       ".ck.ck-content blockquote{font-style:italic;border-left-width:3px}" +
-      ".ck.ck-content ul li::marker{content:'— '}" },
+      ".ck.ck-content ul li::marker{content:'— '}" +
+      ".ck.ck-content a{color:color-mix(in oklab,var(--ck-content-font-color,#000) 35%,#c0392b);text-underline-offset:3px;text-decoration-thickness:1px}" },
     { name: "Mono", sw: "#394556", css:
       ".ck.ck-content{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;line-height:1.65}" +
       ".ck.ck-content h2,.ck.ck-content h3{text-transform:uppercase;letter-spacing:0.07em;font-size:1.05em}" +
-      ".ck.ck-content ul li::marker{content:'▸ '}" },
+      ".ck.ck-content ul li::marker{content:'▸ '}" +
+      ".ck.ck-content a{color:color-mix(in oklab,var(--ck-content-font-color,#000) 35%,#0e9f8e);text-decoration:none;border-bottom:1px dashed currentColor}" },
     { name: "Billboard", sw: "#7e00fd", css:
       ".ck.ck-content{font-size:19px;line-height:1.6}" +
       ".ck.ck-content h2{font-size:2em;font-weight:800;letter-spacing:-0.02em}" +
       ".ck.ck-content h3{font-size:1.4em;font-weight:750}" +
-      ".ck.ck-content blockquote{font-size:1.15em;font-weight:600;border-left-width:4px}" }
+      ".ck.ck-content blockquote{font-size:1.15em;font-weight:600;border-left-width:4px}" +
+      ".ck.ck-content a{color:color-mix(in oklab,var(--ck-content-font-color,#000) 30%,#8b3dff);font-weight:700;text-decoration-thickness:2px}" }
   ];
 
   /* ================= shadow roots & style adoption ================= */
@@ -197,6 +200,11 @@
   adoptStyles(shadow);
 
   /* Content-style carriers: one per tree holding an editing area. */
+  /* Note that v49's ckeditor5.css has no .ck-content a rule
+     (--ck-color-link-default only paints the link balloon's preview), so the
+     LINK COLOR is a content-style concern: the Default preset leaves it to
+     inherit from whatever "a" rule reaches the tree; the other presets set
+     their own. */
   var shadowContentStyle = document.createElement("style");
   shadow.appendChild(shadowContentStyle);
   var docContentStyle = document.createElement("style");
@@ -216,7 +224,7 @@
     combo.innerHTML = "Current mix — <b>1</b> " + SURROUNDS[state.surround].name +
       " · <b>2</b> " + THEMES[state.theme].name +
       " · <b>3</b> " + CONTENT_STYLES[state.content].name +
-      ". The shadow editor follows 2 + 3 only; the light editor also picks up 1.";
+      ". With Shadow DOM the editor follows 2 + 3 only; without it, the editor also picks up 1.";
   }
 
   function makeChips(containerId, items, onPick, before) {
@@ -245,11 +253,11 @@
   function renderBleed(s) {
     var body;
     if (!s.bleeds.length) {
-      body = '<ul><li><span class="ok">No host app styles active — all three copies render alike. Pick a surroundings preset to see the bleed.</span></li></ul>';
+      body = '<ul><li><span class="ok">No host app styles active beyond the page\'s own <code>a { color }</code>, which already reaches the editor without Shadow DOM (compare the link row below). Pick a surroundings preset to see the full bleed.</span></li></ul>';
     } else {
       body = "<ul>" + s.bleeds.map(function (b) {
         return "<li><code>" + b.rule + "</code> — " + b.effect +
-          ' <span class="hits">→ hits host copy ✓ · light editor ✓ · shadow editor ✕</span></li>';
+          ' <span class="hits">→ hits host copy ✓ · without Shadow DOM ✓ · with Shadow DOM ✕</span></li>';
       }).join("") + "</ul>";
     }
     bleedEl.innerHTML = '<p class="bleed-title">What leaks where</p>' + body +
@@ -263,13 +271,28 @@
     if (measureTimer) clearTimeout(measureTimer);
     measureTimer = setTimeout(measure, 650); /* wait out the color transitions */
   }
+  /* color-mix() results come back as oklab(); print them as rgb() like the rest */
+  function okToRgb(c) {
+    var m = /^oklab\(([-\d.]+) ([-\d.]+) ([-\d.]+)\)$/.exec(c);
+    if (!m) return c;
+    var L = +m[1], a = +m[2], b = +m[3];
+    var l_ = L + 0.3963377774 * a + 0.2158037573 * b, m_ = L - 0.1055613458 * a - 0.0638541728 * b, s_ = L - 0.0894841775 * a - 1.2914855480 * b;
+    var l = l_ * l_ * l_, mm = m_ * m_ * m_, ss = s_ * s_ * s_;
+    function g(v) { v = Math.min(1, Math.max(0, v)); return Math.round(255 * (v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1 / 2.4) - 0.055)); }
+    return "rgb(" + g(4.0767416621 * l - 3.3077115913 * mm + 0.2309699292 * ss) + ", " +
+      g(-1.2684380046 * l + 2.6097574011 * mm - 0.3413193965 * ss) + ", " +
+      g(-0.0041960863 * l - 0.7034186147 * mm + 1.7076147010 * ss) + ")";
+  }
   function probe(scopeRoot) {
     if (!scopeRoot) return null;
     function cs(sel, prop) {
-      var el = scopeRoot.querySelector(sel);
+      /* selectors in priority order: inside an editor, ".ck-content a" must win
+         over any "a" the editor UI renders earlier in the tree */
+      var el = null;
+      sel.split(", ").some(function (one) { el = scopeRoot.querySelector(one); return !!el; });
       if (!el) return null;
       var v = getComputedStyle(el)[prop];
-      return prop === "fontFamily" ? v.split(",")[0].replace(/["']/g, "") : v;
+      return prop === "fontFamily" ? v.split(",")[0].replace(/["']/g, "") : okToRgb(v);
     }
     return {
       "paragraph font": cs(".ck-content p, p", "fontFamily"),
@@ -290,13 +313,13 @@
     var rows = Object.keys(sh).map(function (k) {
       if (sh[k] == null || li[k] == null) return "";
       var same = sh[k] === li[k];
-      return "<tr><td>" + k + "</td><td>" + sh[k] + "</td><td>" + li[k] + "</td><td>" +
+      return "<tr><td>" + k + "</td><td>" + li[k] + "</td><td>" + sh[k] + "</td><td>" +
         (same ? '<span class="d-ok">✓ intact</span>'
               : '<span class="d-bad">⚠ overridden by the surroundings</span>') + "</td></tr>";
     }).join("");
     out.innerHTML =
-      '<p class="bleed-title" style="margin-top:12px">Measured in your browser — what survived in the light editor</p>' +
-      '<table class="diffs"><thead><tr><th>first element</th><th>shadow editor (intended)</th><th>light editor (actual)</th><th>verdict</th></tr></thead>' +
+      '<p class="bleed-title" style="margin-top:12px">Measured in your browser — what survived in the editor without Shadow DOM</p>' +
+      '<table class="diffs"><thead><tr><th>first element</th><th>without Shadow DOM (actual)</th><th>with Shadow DOM (intended)</th><th>verdict</th></tr></thead>' +
       "<tbody>" + rows + "</tbody></table>";
   }
 
@@ -306,7 +329,7 @@
     frame.dataset.surround = s.id;
     frameTitle.textContent = s.title;
     frameSide.innerHTML = s.side;
-    tagLight.textContent = s.bleeds.length ? "Light DOM editor — host styles leak in" : "Light DOM editor";
+    tagLight.textContent = s.bleeds.length ? "Without Shadow DOM — host styles leak in" : "Without Shadow DOM — today's default";
     renderBleed(s);
     setActive(surroundBox, i); updateCombo();
   });
@@ -402,19 +425,79 @@
     .then(scheduleMeasure)
     .catch(function (e) { bootError(isoLight, String(e && e.message || e)); });
 
-  /* ================= copy button ================= */
-  var copyBtn = document.getElementById("copyVf");
-  copyBtn.addEventListener("click", function () {
-    var text = document.getElementById("vfCode").textContent;
-    navigator.clipboard.writeText(text).then(function () {
-      copyBtn.textContent = "Copied ✓";
-      setTimeout(function () { copyBtn.textContent = "Copy"; }, 1600);
-    }).catch(function () {
-      var range = document.createRange();
-      range.selectNodeContents(document.getElementById("vfCode"));
-      var sel = window.getSelection();
-      sel.removeAllRanges(); sel.addRange(range);
-      copyBtn.textContent = "Select + ⌘C";
+  /* ================= syntax highlighting for the Visualforce snippet =================
+     Reads the <pre>'s textContent, re-emits it as spans. Markup (apex/HTML) and the
+     inline <script> body get separate tokenizers; each alternation is scanned left to
+     right so a quote inside a comment, or "//" inside a string, lands in the right token. */
+  function esc(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  function tok(cls, s) { return '<span class="tok-' + cls + '">' + esc(s) + "</span>"; }
+  function hlMerge(s) {              /* {!$Resource.X} merge fields inside strings */
+    var re = /\{![^}]*\}/g, out = "", last = 0, m;
+    while ((m = re.exec(s))) { out += esc(s.slice(last, m.index)) + tok("m", m[0]); last = re.lastIndex; }
+    return out + esc(s.slice(last));
+  }
+  function hlAttrs(s) {
+    var re = /("[^"]*"|'[^']*')|([\w:.-]+)(?=\s*=)/g, out = "", last = 0, m;
+    while ((m = re.exec(s))) {
+      out += esc(s.slice(last, m.index));
+      out += m[1] ? '<span class="tok-s">' + hlMerge(m[1]) + "</span>" : tok("a", m[2]);
+      last = re.lastIndex;
+    }
+    return out + esc(s.slice(last));
+  }
+  function hlMarkup(s) {
+    var re = /(<!--[\s\S]*?-->)|(<[\/?]?[\w:.-]+)([^>]*?)([\/?]?>)/g, out = "", last = 0, m;
+    while ((m = re.exec(s))) {
+      out += esc(s.slice(last, m.index));
+      out += m[1] ? tok("c", m[1]) : tok("t", m[2]) + hlAttrs(m[3]) + tok("t", m[4]);
+      last = re.lastIndex;
+    }
+    return out + esc(s.slice(last));
+  }
+  function hlJs(s) {
+    var re = /(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|('(?:[^'\\\n]|\\.)*'|"(?:[^"\\\n]|\\.)*"|`(?:[^`\\]|\\.)*`)|\b(const|let|var|await|async|new|for|of|in|function|return|if|else|try|catch|throw|import|export|from|default|class|extends|static|this|true|false|null|undefined)\b|\b(\d+(?:\.\d+)?)\b/g;
+    var out = "", last = 0, m;
+    while ((m = re.exec(s))) {
+      out += esc(s.slice(last, m.index));
+      if (m[1]) out += tok("c", m[1]);
+      else if (m[2]) out += '<span class="tok-s">' + hlMerge(m[2]) + "</span>";
+      else if (m[3]) out += tok("k", m[3]);
+      else out += tok("n", m[4]);
+      last = re.lastIndex;
+    }
+    return out + esc(s.slice(last));
+  }
+  function highlightCode(pre) {
+    var s = pre.textContent, html = "", last = 0, m;
+    var re = /(<script\b[^>]*>)([\s\S]*?)(<\/script>)/g;
+    while ((m = re.exec(s))) {
+      html += hlMarkup(s.slice(last, m.index)) + hlMarkup(m[1]) + hlJs(m[2]) + hlMarkup(m[3]);
+      last = re.lastIndex;
+    }
+    pre.innerHTML = html + hlMarkup(s.slice(last));
+  }
+  function highlightByLang(pre) {
+    var lang = pre.dataset.lang;
+    if (lang === "js") pre.innerHTML = hlJs(pre.textContent);
+    else if (lang === "xml") pre.innerHTML = hlMarkup(pre.textContent);
+    else highlightCode(pre);
+  }
+  try { document.querySelectorAll("pre[data-lang]").forEach(highlightByLang); } catch (e) { /* plain text is a fine fallback */ }
+
+  /* ================= copy buttons ================= */
+  document.querySelectorAll(".codebox button.copy[data-target]").forEach(function (btn) {
+    var pre = document.getElementById(btn.dataset.target);
+    btn.addEventListener("click", function () {
+      navigator.clipboard.writeText(pre.textContent).then(function () {
+        btn.textContent = "Copied ✓";
+        setTimeout(function () { btn.textContent = "Copy"; }, 1600);
+      }).catch(function () {
+        var range = document.createRange();
+        range.selectNodeContents(pre);
+        var sel = window.getSelection();
+        sel.removeAllRanges(); sel.addRange(range);
+        btn.textContent = "Select + ⌘C";
+      });
     });
   });
   }).catch(function (e) { console.error("CKEditor stylesheet failed to load:", e); });

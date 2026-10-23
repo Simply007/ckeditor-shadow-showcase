@@ -18,7 +18,7 @@
   <header>
     <p class="eyebrow">CKEditor 5 v49 &middot; UMD build &middot; Shadow DOM</p>
     <h1>CKEditor Shadow Showcase</h1>
-    <p class="lede">Three independent style levels — <b>1</b> the surroundings (the host app's page styles), <b>2</b> the editor theme (toolbar, dropdowns, panels), <b>3</b> the content styles (the document inside the editing area). Mix any combination below and watch two identically configured editors react: the <b>shadow-DOM</b> editor only ever changes when you change levels 2 or 3, while the <b>light-DOM</b> twin also inherits whatever level 1 throws at the page. Built after the official <a href="https://ckeditor.com/docs/ckeditor5/latest/getting-started/setup/shadow-dom.html">shadow DOM guide</a>.</p>
+    <p class="lede">Three independent style levels — <b>1</b> the surroundings (the host app's page styles), <b>2</b> the editor theme (toolbar, dropdowns, panels), <b>3</b> the content styles (the document inside the editing area). Mix any combination below and watch two identically configured editors react: the editor <b>with Shadow DOM</b> only ever changes when you change levels 2 or 3, while the twin <b>without Shadow DOM</b> also inherits whatever level 1 throws at the page. Built after the official <a href="https://ckeditor.com/docs/ckeditor5/latest/getting-started/setup/shadow-dom.html">shadow DOM guide</a>.</p>
   </header>
 
   <section class="panel ctl-rows">
@@ -50,16 +50,16 @@
           </div>
           <div class="iso-grid">
             <div class="iso-col">
-              <span class="tag shadow-dom" id="tagShadow">Shadow DOM editor</span>
-              <div id="host" class="ck-theme-host"><p style="font:13px system-ui;color:#868d98;padding:20px 0;text-align:center">Booting CKEditor 5 from jsDelivr…</p></div>
+              <span class="tag light-dom" id="tagLight">Without Shadow DOM — today's default</span>
+              <div id="isoLight"></div>
             </div>
             <div class="iso-col">
-              <span class="tag light-dom" id="tagLight">Light DOM editor</span>
-              <div id="isoLight"></div>
+              <span class="tag shadow-dom" id="tagShadow">With Shadow DOM</span>
+              <div id="host" class="ck-theme-host"><p style="font:13px system-ui;color:#868d98;padding:20px 0;text-align:center">Booting CKEditor 5 from jsDelivr…</p></div>
             </div>
           </div>
           <div class="bleed" id="bleed"></div>
-          <p class="frame-note">The dashed block and both editors render <em>the same HTML</em>. Same build, same configuration, same theme, same content styles — the only difference is the tree each copy lives in. Open devtools: the left editor sits under <code>#shadow-root</code>.</p>
+          <p class="frame-note">The dashed block and both editors render <em>the same HTML</em>. Same build, same configuration, same theme, same content styles — the only difference is the tree each copy lives in. Open devtools: the right editor sits under <code>#shadow-root</code>.</p>
         </div>
       </div>
     </div>
@@ -69,7 +69,7 @@
     <div class="facts">
       <div>
         <h3>1 · Surroundings stay out</h3>
-        <p>Page style sheets do not match elements inside a shadow tree. The host app's rules (<code>p</code>, <code>h2</code>, <code>li</code>…) restyle the light-DOM editor's document because it <em>is</em> page DOM; the shadow editor needs no counter-measures. Its floating UI is isolated the same way — it mounts in a dedicated shadow root at the end of <code>&lt;body&gt;</code> via <code>config.ui.overlayContainer</code>.</p>
+        <p>Page style sheets do not match elements inside a shadow tree. The host app's rules (<code>p</code>, <code>h2</code>, <code>li</code>…) restyle the document of the editor without Shadow DOM because it <em>is</em> page DOM; the shadow editor needs no counter-measures. Its floating UI is isolated the same way — it mounts in a dedicated shadow root at the end of <code>&lt;body&gt;</code> via <code>config.ui.overlayContainer</code>.</p>
       </div>
       <div>
         <h3>2 · Theme on the host, not <code>:root</code></h3>
@@ -77,23 +77,26 @@
       </div>
       <div>
         <h3>3 · Content styles per tree</h3>
-        <p>Typography of the edited document is scoped to <code>.ck-content</code> and must be loaded into each tree that holds an editing area: a <code>&lt;style&gt;</code> in the shadow root for the shadow editor, one in the document for the light editor. Note the namespace split: the canvas <em>surface</em> belongs to the theme (<code>--ck-color-base-background</code> paints the editable area), while the document <em>ink</em> belongs to <code>--ck-content-*</code> (<code>--ck-content-font-color</code> defaults to a fixed <code>#000</code>). The themes here bridge the two, so a dark theme recolors the ink along with its canvas; the content presets stay purely typographic so colors never fight the theme's contrast.</p>
+        <p>Typography of the edited document is scoped to <code>.ck-content</code> and must be loaded into each tree that holds an editing area: a <code>&lt;style&gt;</code> in the shadow root for the shadow editor, one in the document for the light editor. Note the namespace split: the canvas <em>surface</em> belongs to the theme (<code>--ck-color-base-background</code> paints the editable area), while the document <em>ink</em> belongs to <code>--ck-content-*</code> (<code>--ck-content-font-color</code> defaults to a fixed <code>#000</code>). The themes here bridge the two, so a dark theme recolors the ink along with its canvas. Link color is a content-style concern too: v49 ships no <code>.ck-content a</code> rule, so the <i>Default</i> preset lets links inherit whatever <code>a</code> rule reaches the tree (the browser default with Shadow DOM, the host page's rule without), while the other presets set their own, blended with the theme's ink via <code>color-mix()</code> so one preset stays readable on light and dark canvases.</p>
       </div>
     </div>
   </section>
 
   <section class="panel">
-    <h2>Put it in Salesforce (Visualforce page)</h2>
-    <p class="sect-note">Per the official guide (<a href="https://ckeditor.com/docs/ckeditor5/latest/getting-started/installation/self-hosted/salesforce.html">Integrating CKEditor 5 with Salesforce</a>), the editor ships into Salesforce as static resources referenced by a Visualforce page, which Lightning embeds in an iframe — and the <i>Lightning</i> theme preset above shows the editor dressed for that shell. Four steps:</p>
-    <ol class="steps">
-      <li><b>Get the build.</b> Download a self-hosted ZIP from the <a href="https://ckeditor.com/ckeditor-5/online-builder/">Online Builder</a> (or grab <code>ckeditor5.umd.js</code> + <code>ckeditor5.css</code> from the npm package, as this page does).</li>
-      <li><b>Upload static resources.</b> Setup → Static Resources → New: <code>CKEditor5JS</code> (the <code>.umd.js</code> file) and <code>CKEditor5CSS</code> (the <code>.css</code> file), Cache Control <i>Public</i>.</li>
-      <li><b>Create the Visualforce page.</b> Setup → Visualforce Pages → New, check <i>Available for Lightning Experience…</i>, paste the code below.</li>
-      <li><b>Embed it.</b> Lightning App Builder → drag the <i>Visualforce</i> component onto a Lightning page and select your page.</li>
-    </ol>
-    <div class="codebox">
-      <button class="copy" id="copyVf">Copy</button>
-      <pre id="vfCode">&lt;apex:page showHeader=&quot;false&quot; standardStylesheets=&quot;false&quot; docType=&quot;html-5.0&quot;&gt;
+    <h2>Put it in Salesforce: two ways</h2>
+    <p class="sect-note">Both start the same: upload <code>ckeditor5.umd.js</code> (1.9&nbsp;MB) and <code>ckeditor5.css</code> (0.2&nbsp;MB) as static resources <code>CKEditor5JS</code> and <code>CKEditor5CSS</code> (Setup → Static Resources, Cache Control <i>Public</i>; well under the 5&nbsp;MB per-resource limit). Grab them from the <a href="https://ckeditor.com/ckeditor-5/online-builder/">Online Builder</a> ZIP or the npm package, as this page does. The <i>Lightning</i> theme preset above shows the editor dressed for either shell.</p>
+    <div class="sf-grid">
+      <div class="sf-col">
+        <h3><span class="way way-old">The documented way</span> Visualforce page in an iframe</h3>
+        <p class="sect-note">What the <a href="https://ckeditor.com/docs/ckeditor5/latest/getting-started/installation/self-hosted/salesforce.html">official guide</a> covers (v49). Lightning embeds the page in an iframe, so the editor gets a plain browser document: everything this showcase does works unchanged. The cost: an iframe, no data binding to the record without extra plumbing, and Visualforce in a 2026 codebase.</p>
+        <ol class="steps">
+          <li><b>Create the Visualforce page.</b> Setup → Visualforce Pages → New, check <i>Available for Lightning Experience…</i>, paste the code below.</li>
+          <li><b>Embed it.</b> Lightning App Builder → drag the <i>Visualforce</i> component onto a Lightning page and select your page.</li>
+        </ol>
+        <div class="codebox">
+          <span class="file">ckeditorPage.page</span>
+          <button class="copy" data-target="vfCode">Copy</button>
+      <pre id="vfCode" data-lang="markup">&lt;apex:page showHeader=&quot;false&quot; standardStylesheets=&quot;false&quot; docType=&quot;html-5.0&quot;&gt;
   &lt;head&gt;
     &lt;!-- CKEditor 5 from static resources (Setup → Static Resources) --&gt;
     &lt;apex:includeScript value=&quot;{!$Resource.CKEditor5JS}&quot;/&gt;
@@ -166,8 +169,146 @@
   &lt;/body&gt;
 &lt;/apex:page&gt;
 </pre>
+        </div>
+        <p class="sect-note" style="margin-top:12px">The page reuses this showcase's shadow-DOM wrapper: adopted stylesheets, a dedicated overlay container, themes on the shadow hosts. <code>licenseKey: 'GPL'</code> runs the open-source build under GPL terms — swap in your commercial key for production or premium features.</p>
+      </div>
+      <div class="sf-col">
+        <h3><span class="way way-new">The native way</span> a Lightning Web Component <span class="draft">draft for review</span></h3>
+        <p class="sect-note">No iframe, no Visualforce: a real LWC you drop on a record, app or home page, with the editor in <em>its own open shadow root</em> inside the component. That root is what buys the isolation: in Lightning Experience components render in synthetic shadow, where SLDS and page styles still leak in; they stop at a real shadow boundary. Not in the official guide and <b>not yet run in an org</b>: the checklist below is what to verify.</p>
+        <ol class="steps">
+          <li><b>Create the bundle</b> <code>force-app/main/default/lwc/ckEditor/</code> with the three files below (the resource names must match <code>@salesforce/resourceUrl/…</code>).</li>
+          <li><b>Deploy and place it.</b> Lightning App Builder → <i>Custom</i> → <code>ckEditor</code>. Listen to its <code>change</code> event from the parent to save <code>detail.value</code>.</li>
+        </ol>
+        <div class="codebox">
+          <span class="file">ckEditor.html</span>
+          <button class="copy" data-target="lwcHtml">Copy</button>
+          <pre id="lwcHtml" data-lang="markup">&lt;template&gt;
+  &lt;!-- Two manual containers: the editor's own open shadow root goes on the
+       first, the overlay root (balloons, dialogs, tooltips) on the second. --&gt;
+  &lt;div class="ck-lwc"&gt;
+    &lt;div class="editor-host" lwc:dom="manual"&gt;&lt;/div&gt;
+    &lt;div class="overlay-host" lwc:dom="manual"&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/template&gt;
+</pre>
+        </div>
+        <div class="codebox">
+          <span class="file">ckEditor.js</span>
+          <button class="copy" data-target="lwcJs">Copy</button>
+          <pre id="lwcJs" data-lang="js">import { LightningElement, api } from 'lwc';
+import { loadScript } from 'lightning/platformResourceLoader';
+import CKEDITOR5_JS from '@salesforce/resourceUrl/CKEditor5JS';
+import CKEDITOR5_CSS from '@salesforce/resourceUrl/CKEditor5CSS';
+
+const LICENSE_KEY = 'GPL'; // or your commercial license key
+
+// Editor theme expressed in SLDS global styling hooks (with fallbacks), so the
+// editor follows the org's theme/branding instead of a hard-coded palette.
+const THEME = {
+  '--ck-color-base-background': 'var(--slds-g-color-neutral-base-100, #ffffff)',
+  '--ck-color-base-foreground': 'var(--slds-g-color-neutral-base-95, #f3f3f3)',
+  '--ck-color-base-border':     'var(--slds-g-color-border-base-1, #e5e5e5)',
+  '--ck-color-base-text':       'var(--slds-g-color-neutral-base-10, #181818)',
+  '--ck-color-base-action':     'var(--slds-g-color-brand-base-50, #0176d3)',
+  '--ck-color-base-active':     'var(--slds-g-color-brand-base-50, #0176d3)',
+  '--ck-color-focus-border':    'var(--slds-g-color-brand-base-50, #0176d3)',
+  '--ck-color-interactive-focus-border': 'var(--slds-g-color-brand-base-50, #0176d3)'
+};
+
+export default class CkEditor extends LightningElement {
+  @api value = '&lt;p&gt;CKEditor 5 in its own open shadow root, inside an LWC.&lt;/p&gt;';
+  editor;
+  booted = false;
+
+  async renderedCallback() {
+    if (this.booted) return;          // runs after every render; boot once
+    this.booted = true;
+    try {
+      // 1. The UMD build via the platform loader (it does not load ES modules).
+      //    Exposes the CKEDITOR global.
+      await loadScript(this, CKEDITOR5_JS);
+
+      // 2. ONE constructed stylesheet from the CSS resource; adopted by every
+      //    root that holds editor UI. (loadStyle() would land in the document,
+      //    where a shadow root cannot see it.)
+      const cssText = await (await fetch(CKEDITOR5_CSS)).text();
+      const sheet = new CSSStyleSheet();
+      sheet.replaceSync(cssText + '.ck.ck-editor__editable_inline{min-height:260px}');
+
+      // 3. Our OWN open shadow roots on the lwc:dom="manual" containers.
+      //    LWS forces the component's root to mode "closed"; CKEditor needs an
+      //    open one (it reads Element#assignedSlot to find what scrolls/clips it).
+      const editorHost = this.template.querySelector('.editor-host');
+      const overlayHost = this.template.querySelector('.overlay-host');
+      const shadow = editorHost.attachShadow({ mode: 'open' });
+      const overlayContainer = overlayHost.attachShadow({ mode: 'open' });
+      shadow.adoptedStyleSheets = [ sheet ];
+      overlayContainer.adoptedStyleSheets = [ sheet ];
+
+      // 4. Theme on the shadow HOSTS (v49 declares tokens on :root, :host, so a
+      //    :root override never reaches a shadowed editor).
+      for (const el of [ editorHost, overlayHost ]) {
+        Object.entries(THEME).forEach(([k, v]) =&gt; el.style.setProperty(k, v));
+      }
+
+      // 5. Mount, wire data out.
+      const mount = document.createElement('div');
+      mount.innerHTML = this.value;
+      shadow.appendChild(mount);
+
+      const { ClassicEditor, Essentials, Paragraph, Heading, Bold, Italic,
+              Link, List, BlockQuote, Table, TableToolbar } = CKEDITOR;
+
+      this.editor = await ClassicEditor.create(mount, {
+        licenseKey: LICENSE_KEY,
+        ui: { overlayContainer },
+        plugins: [ Essentials, Paragraph, Heading, Bold, Italic, Link,
+                   List, BlockQuote, Table, TableToolbar ],
+        toolbar: [ 'undo', 'redo', '|', 'heading', '|', 'bold', 'italic', '|',
+                   'link', 'bulletedList', 'numberedList', '|', 'blockQuote', 'insertTable' ]
+      });
+      this.editor.model.document.on('change:data', () =&gt; {
+        this.dispatchEvent(new CustomEvent('change', {
+          detail: { value: this.editor.getData() }
+        }));
+      });
+    } catch (e) {
+      console.error('CKEditor 5 failed to boot', e);
+    }
+  }
+
+  disconnectedCallback() {
+    this.editor?.destroy();
+    this.editor = undefined;
+  }
+}
+</pre>
+        </div>
+        <div class="codebox">
+          <span class="file">ckEditor.js-meta.xml</span>
+          <button class="copy" data-target="lwcXml">Copy</button>
+          <pre id="lwcXml" data-lang="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata"&gt;
+  &lt;apiVersion&gt;64.0&lt;/apiVersion&gt;
+  &lt;isExposed&gt;true&lt;/isExposed&gt;
+  &lt;targets&gt;
+    &lt;target&gt;lightning__RecordPage&lt;/target&gt;
+    &lt;target&gt;lightning__AppPage&lt;/target&gt;
+    &lt;target&gt;lightning__HomePage&lt;/target&gt;
+  &lt;/targets&gt;
+&lt;/LightningComponentBundle&gt;
+</pre>
+        </div>
+        <p class="bleed-title" style="margin-top:14px">Review checklist (scratch org)</p>
+        <ol class="steps review">
+          <li><b>Open root inside a closed one.</b> Lightning Web Security forces every component's own shadow root to <code>closed</code>; CKEditor needs an open root because it reads <code>Element#assignedSlot</code> to work out what scrolls and clips it. Hence <code>attachShadow({ mode: 'open' })</code> on the <code>lwc:dom="manual"</code> divs rather than mounting in the component root. Verify LWS lets a component attach a shadow root to its own manual node.</li>
+          <li><b>CSS delivery.</b> <code>loadStyle()</code> injects into the document, which a shadow root cannot see, so the recipe fetches the resource and adopts a constructed stylesheet. If <code>fetch()</code> of a static resource is restricted in your org, fall back to a <code>&lt;link rel="stylesheet"&gt;</code> created inside each shadow root.</li>
+          <li><b>Overlay placement.</b> The overlay root lives inside the component, not at the end of <code>&lt;body&gt;</code> (the component should not reach for <code>document.body</code>). Balloons and dialogs position by <code>getBoundingClientRect()</code>, so this works until an ancestor region clips with <code>overflow: hidden</code>; check the link balloon near the bottom of a record page.</li>
+          <li><b>Leave <code>shadowSupportMode</code> alone.</b> Native shadow for the component itself is still beta in mixed shadow mode, it is forced onto every descendant, and base components do not support it. The editor's own root gives you the isolation without it.</li>
+          <li><b>Known upstream limit.</b> Safari and Chromium do not report the direction of a mouse selection inside a shadow root, so a backward selection is treated as forward. No workaround; same in the Visualforce version.</li>
+        </ol>
+      </div>
     </div>
-    <p class="sect-note" style="margin-top:12px">The page reuses this showcase's shadow-DOM wrapper: adopted stylesheets, a dedicated overlay container, themes on the shadow hosts. <code>licenseKey: 'GPL'</code> runs the open-source build under GPL terms — swap in your commercial key for production or premium features.</p>
   </section>
 
   <footer class="foot">
