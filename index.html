@@ -3,8 +3,27 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CKEditor Shadow Showcase</title>
-<meta name="description" content="CKEditor 5 v49 in a Shadow DOM vs. the light DOM: three independent style levels (surroundings, editor theme, content styles), WCAG-audited themes, and a Salesforce Visualforce recipe.">
+<title>CKEditor v49 Shadow Showcase</title>
+<meta name="description" content="CKEditor v49 running inside a Shadow DOM next to a light-DOM twin: switch host-page styles, WCAG-audited editor themes and content styles, and see what leaks. Includes Salesforce Visualforce and LWC recipes.">
+<meta name="author" content="Ondřej Chrastina">
+<meta name="theme-color" content="#1c0038">
+<link rel="canonical" href="https://ondrej.chrastina.dev/ckeditor-shadow-showcase/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Ondřej Chrastina">
+<meta property="og:title" content="CKEditor v49 Shadow Showcase">
+<meta property="og:description" content="CKEditor v49 running inside a Shadow DOM next to a light-DOM twin: switch host-page styles, WCAG-audited editor themes and content styles, and see what leaks. Includes Salesforce Visualforce and LWC recipes.">
+<meta property="og:url" content="https://ondrej.chrastina.dev/ckeditor-shadow-showcase/">
+<meta property="og:image" content="https://ondrej.chrastina.dev/ckeditor-shadow-showcase/og-image.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="CKEditor v49 Shadow Showcase: two editors in a Salesforce Lightning shell, host styles leaking into the one without Shadow DOM">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:creator" content="@ChrastinaOndrej">
+<meta name="twitter:title" content="CKEditor v49 Shadow Showcase">
+<meta name="twitter:description" content="CKEditor v49 running inside a Shadow DOM next to a light-DOM twin: switch host-page styles, WCAG-audited editor themes and content styles, and see what leaks. Includes Salesforce Visualforce and LWC recipes.">
+<meta name="twitter:image" content="https://ondrej.chrastina.dev/ckeditor-shadow-showcase/og-image.png">
+<meta name="twitter:image:alt" content="CKEditor v49 Shadow Showcase: two editors in a Salesforce Lightning shell, host styles leaking into the one without Shadow DOM">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%237e00fd%27/%3E%3Crect x=%279%27 y=%279%27 width=%2714%27 height=%2714%27 rx=%273%27 fill=%27none%27 stroke=%27%23afe229%27 stroke-width=%272.5%27/%3E%3C/svg%3E">
 <link rel="stylesheet" href="./styles.css">
 <!-- CKEditor 5 v49.0.0 stylesheet. The document copy styles the light-DOM editor
@@ -17,7 +36,7 @@
 
   <header>
     <p class="eyebrow">CKEditor 5 v49 &middot; UMD build &middot; Shadow DOM</p>
-    <h1>CKEditor Shadow Showcase</h1>
+    <h1>CKEditor v49 Shadow Showcase</h1>
     <p class="lede">Three independent style levels — <b>1</b> the surroundings (the host app's page styles), <b>2</b> the editor theme (toolbar, dropdowns, panels), <b>3</b> the content styles (the document inside the editing area). Mix any combination below and watch two identically configured editors react: the editor <b>with Shadow DOM</b> only ever changes when you change levels 2 or 3, while the twin <b>without Shadow DOM</b> also inherits whatever level 1 throws at the page. Built after the official <a href="https://ckeditor.com/docs/ckeditor5/latest/getting-started/setup/shadow-dom.html">shadow DOM guide</a>.</p>
   </header>
 
