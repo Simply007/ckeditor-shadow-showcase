@@ -26,6 +26,7 @@ python3 -m http.server 8000
 | `styles.css` | The showcase's own page styles |
 | `app.js` | Editor bootstrapping, shadow-root wiring, theme/surroundings/content switching, leak measurement |
 | `vendor/ckeditor5.css` | CKEditor 5 v49.0.0 stylesheet (self-hosted) |
+| `favicon.svg`, `favicon-32x32.png`, `apple-touch-icon.png` | Tab icon (SVG, PNG fallback) and 180x180 iOS home-screen / share icon |
 | `og-image.png` | 1200x630 social preview (Salesforce Lightning surroundings + Lightning theme), referenced by the Open Graph and Twitter tags |
 | `vendor/ckeditor5.umd.js` | CKEditor 5 v49.0.0 UMD build (self-hosted, `licenseKey: 'GPL'`) |
 
