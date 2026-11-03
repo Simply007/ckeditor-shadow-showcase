@@ -121,6 +121,13 @@ usually changes.
 
 ## Repo housekeeping
 
+- **SEO / social preview.** `index.html` carries canonical, Open Graph and
+  Twitter tags with absolute URLs under
+  `https://ondrej.chrastina.dev/ckeditor-shadow-showcase/`. `og-image.png`
+  (1200x630) is a screenshot of the page with Salesforce Lightning
+  surroundings + Lightning theme, the panels above the frame hidden and a
+  title band added. Retake it when the title or the frame changes visibly.
+
 - `.gitignore` covers macOS metadata (`.DS_Store`, `._*`, …), `.vscode/`,
   `.idea/` and logs. `.claude/skills/ckeditor/` is the official CKEditor
   agent skill (https://github.com/ckeditor/skills), vendored for anyone who
