@@ -121,6 +121,14 @@ usually changes.
 
 ## Repo housekeeping
 
+- **Bump the `?v=` on `styles.css` and `app.js` in `index.html` whenever
+  either file changes** (use the date, e.g. `?v=2026-11-03`). This repo is
+  served under the same origin as the Gatsby site at the domain root, whose
+  old offline service worker served `.js`/`.css` cache-first forever; a URL
+  with a query string escapes that route and any browser cache. The vendored
+  CKEditor files are pinned by version and change only on upgrade, so bump
+  their links too when upgrading.
+
 - **SEO / social preview.** `index.html` carries canonical, Open Graph and
   Twitter tags with absolute URLs under
   `https://ondrej.chrastina.dev/ckeditor-shadow-showcase/`. `og-image.png`
